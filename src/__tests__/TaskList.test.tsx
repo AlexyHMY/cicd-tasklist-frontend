@@ -38,6 +38,36 @@ describe('TaskList', () => {
 		expect(screen.getByText('Chargement des tâches...')).toBeInTheDocument();
 	});
 
+	it('shows error state with the message', () => {
+		render(
+			<TaskList
+				tasks={[]}
+				loading={false}
+				error={'Boom'}
+				onToggle={vi.fn()}
+				onDelete={vi.fn()}
+				onEdit={vi.fn()}
+			/>
+		);
+		expect(screen.getByTestId('error')).toBeInTheDocument();
+		expect(screen.getByText(/Boom/)).toBeInTheDocument();
+	});
+
+	it('shows empty state when there is no task', () => {
+		render(
+			<TaskList
+				tasks={[]}
+				loading={false}
+				error={null}
+				onToggle={vi.fn()}
+				onDelete={vi.fn()}
+				onEdit={vi.fn()}
+			/>
+		);
+		expect(screen.getByTestId('empty')).toBeInTheDocument();
+		expect(screen.getByText('Aucune tâche')).toBeInTheDocument();
+	});
+
 	it('renders list of tasks', () => {
 		render(
 			<TaskList
@@ -53,7 +83,20 @@ describe('TaskList', () => {
 		expect(screen.getByText('Première tâche')).toBeInTheDocument();
 		expect(screen.getByText('Deuxième tâche')).toBeInTheDocument();
 		expect(screen.getByText('2 tâches')).toBeInTheDocument();
+		expect(screen.getByText('1 terminée')).toBeInTheDocument();
 	});
 
-	// ... TODO: Add more tests
+	it('uses singular label with a single task', () => {
+		render(
+			<TaskList
+				tasks={[mockTasks[0]]}
+				loading={false}
+				error={null}
+				onToggle={vi.fn()}
+				onDelete={vi.fn()}
+				onEdit={vi.fn()}
+			/>
+		);
+		expect(screen.getByText('1 tâche')).toBeInTheDocument();
+	});
 });
