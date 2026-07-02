@@ -22,13 +22,13 @@ pipeline {
 
         stage('Install') {
             steps {
-                sh 'npm ci'
+                bat 'npm ci'
             }
         }
 
         stage('Unit tests and coverage') {
             steps {
-                sh 'npm run test:coverage'
+                bat 'npm run test:coverage'
             }
             post {
                 always {
@@ -41,7 +41,7 @@ pipeline {
         stage('Code quality (SonarQube)') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner'
+                    bat 'sonar-scanner'
                 }
             }
         }
@@ -56,20 +56,20 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'npm run build'
+                bat 'npm run build'
             }
         }
 
         stage('Docker build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .'
+                bat 'docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .'
             }
         }
 
         stage('Security scan and SBOM (Trivy)') {
             steps {
-                sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format table $IMAGE_NAME:$IMAGE_TAG'
-                sh 'trivy image --format spdx-json --output sbom-spdx.json $IMAGE_NAME:$IMAGE_TAG'
+                bat 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format table $IMAGE_NAME:$IMAGE_TAG'
+                bat 'trivy image --format spdx-json --output sbom-spdx.json $IMAGE_NAME:$IMAGE_TAG'
             }
             post {
                 always {
@@ -81,9 +81,9 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                    sh 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
-                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
-                    sh 'docker push $IMAGE_NAME:latest'
+                    bat 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
+                    bat 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                    bat 'docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -91,7 +91,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker logout || true'
+            bat 'docker logout || true'
         }
         cleanup {
             cleanWs()
