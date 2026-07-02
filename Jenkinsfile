@@ -62,14 +62,14 @@ pipeline {
 
         stage('Docker build') {
             steps {
-                bat 'docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .'
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% -t %IMAGE_NAME%:latest ."
             }
         }
 
         stage('Security scan and SBOM (Trivy)') {
             steps {
-                bat 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format table $IMAGE_NAME:$IMAGE_TAG'
-                bat 'trivy image --format spdx-json --output sbom-spdx.json $IMAGE_NAME:$IMAGE_TAG'
+                bat 'trivy image --exit-code 0 --severity HIGH,CRITICAL --format table %IMAGE_NAME%:%IMAGE_TAG%'
+                bat 'trivy image --format spdx-json --output sbom-spdx.json %IMAGE_NAME%:%IMAGE_TAG%'
             }
             post {
                 always {
@@ -81,9 +81,9 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                    bat 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
-                    bat 'docker push $IMAGE_NAME:$IMAGE_TAG'
-                    bat 'docker push $IMAGE_NAME:latest'
+                    bat 'echo "$DOCKERHUB_PASS" | docker login -u "%DOCKERHUB_USER%" --password-stdin'
+                    bat 'docker push %IMAGE_NAME%:%IMAGE_TAG%'
+                    bat 'docker push %IMAGE_NAME%:latest'
                 }
             }
         }
